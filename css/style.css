@@ -1,7 +1,3 @@
-* {
-  outline: 1px solid red;
-  background: rgba(255, 0, 0, 0.01);
-}
 :root {
   --bg: #ffffff;
   --text: #000000;
