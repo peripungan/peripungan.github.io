@@ -1,3 +1,7 @@
+* {
+  outline: 1px solid red;
+  background: rgba(255, 0, 0, 0.01);
+}
 :root {
   --bg: #ffffff;
   --text: #000000;
@@ -58,7 +62,7 @@ body {
 .logo,
 header {
   display: flex;
-  align-items: center;
+  align-items: flex-start; /* atau baseline */
   gap: 10px;
   flex-wrap: wrap;
 }
@@ -327,8 +331,8 @@ td.harga {
 td.harga:hover::after {
   content: "+PPN";
   position: absolute;
-  top: 2px;
-  right: -2px;
+  top: -0.5rem;
+  right: -1rem;
   font-size: 0.7em;
   padding: 1px 2px;
   color: #fff;
@@ -344,6 +348,11 @@ td.harga:hover::after {
     flex-direction: column;
     align-items: stretch;
     margin-top: 0;
+  }
+
+  header h2 {
+    font-size: 1.2em;
+    flex-basis: 100%;
   }
 
   .search-wrapper {
@@ -402,10 +411,6 @@ td.harga:hover::after {
   th, td {
     padding: 8px 6px;
     font-size: 14px;
-  }
-
-  h2 {
-    font-size: 1.2em;
   }
 
   #status-bar {

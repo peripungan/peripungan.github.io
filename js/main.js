@@ -132,7 +132,6 @@ function initResize(index) {
 }
 
 function renderTable() {
-  console.log("Sample row data:", data[0]);
   const search = document.getElementById('searchInput').value.toLowerCase().trim();
   const selectedFloors = getSelectedFloors();
   const dynamicColumns = ["SKU", "NAMA", "Harga PL", "Grand Total", ...selectedFloors];
@@ -184,10 +183,21 @@ function renderTable() {
       if (value === undefined || value === "") {
         value = "-";
       } else if (col === "Harga PL") {
-        value = formatCurrency(Number(value));
-      }
+        const raw = Number(value);
+        td.textContent = formatCurrency(raw);
+        td.classList.add("harga");
 
-      td.textContent = value;
+        td.addEventListener("mouseover", () => {
+          const ppn = raw * 1.11;
+          td.textContent = formatCurrency(ppn);
+        });
+
+        td.addEventListener("mouseout", () => {
+          td.textContent = formatCurrency(raw);
+        });
+      } else {
+        td.textContent = value;
+      }
 
       if (["SKU", "NAMA"].includes(col)) {
         td.classList.add("left-align");
