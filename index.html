@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="favicon.ico" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pernataan DPS</title>
+  <script src="js/main.js" defer></script>
+</head>
+<body class="light">
+  <div class="logo">
+    <h2>Pernataan DPS</h2>
+
+    <div id="status-bar">
+      Last updated: <span id="lastUpdated">-</span>
+      <a id="spinner"></a>
+    </div>
+  </div>
+
+  <div class="search-wrapper">
+    <input type="text" id="searchInput" placeholder="Cari SKU atau Nama..." oninput="onSearchInput()" />
+    <span class="clear-button" onclick="clearSearch()">×</span>
+  </div>
+
+  <div class="filter-wrapper">
+    <button id="toggleFilterBtn" class="mobile-toggle">🔽 Filter</button>
+
+    <div class="filter-inner">
+      <header>
+        <select id="themeSelector" aria-label="themeSelector" onchange="changeTheme(this.value)">
+          <option value="light">Orang Normal</option>
+          <option value="dark">Malem</option>
+          <option value="blue">Langit</option>
+          <option value="sepia">Gurun</option>
+          <option value="blood">Darah</option>
+          <option value="mars">Mars</option>
+        </select>
+
+        <div class="tab-buttons">
+          <button onclick="setTab('all')" id="tabAll" class="active">Semua Data</button>
+          <button onclick="setTab('minus')" id="tabMinus">Stok Minus</button>
+        </div>
+      </header>
+
+      <div class="lantai-wrapper">
+        <div id="lantaiFilter"></div>
+        <button onclick="selectAllFloors()">Pilih Semua Lantai</button>
+        <button onclick="clearAllFloors()">Hapus Semua Lantai</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="table-wrapper" id="tableWrapper">
+    <table id="data-table">
+      <thead></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+  <a href="javascript:void(0);" id="rocketmeluncur" class="" aria-label="Back to top"><i></i></a>
+  <audio id="easterAudio" src="assets/hidup-jokowi.mp3" preload="auto"></audio>
+  <audio id="easterAudio" src="assets/roblox-death.mp3" preload="auto"></audio>
+</body>
+</html>
