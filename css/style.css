@@ -58,7 +58,7 @@ body {
 .logo,
 header {
   display: flex;
-  align-items: flex-start; /* atau baseline */
+  align-items: center;
   gap: 10px;
   flex-wrap: wrap;
 }
