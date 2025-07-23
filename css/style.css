@@ -221,11 +221,27 @@ thead {
 
 th {
   position: relative;
-  z-index: 100;
+  z-index: 50;
   cursor: pointer;
   background-color: var(--table-header);
   background-clip: padding-box;
   text-align: center;
+  padding-right: 1.5em;
+}
+
+th:hover {
+  background-color: var(--border);
+}
+
+th::after {
+  position: absolute;
+  right: 0.5em;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.8em;
+  opacity: 0.7;
+  pointer-events: none;
+  z-index: 99;
 }
 
 th.sort-asc::after {
@@ -246,7 +262,6 @@ th, td {
 td {
   text-align: right;
 }
-
 
 .resizer {
   position: absolute;
@@ -322,6 +337,10 @@ td {
 td.harga {
   position: relative;
   white-space: nowrap;
+}
+
+td.harga:hover {
+  border: 1px solid var(--text);
 }
 
 td.harga:hover::after {

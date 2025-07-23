@@ -4,8 +4,11 @@
   <meta charset="UTF-8" />
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="favicon.ico" />
-  <link rel="stylesheet" href="css/style.min.css">
-  <script src="js/main.min.js" defer></script>
+  <!-- <link rel="stylesheet" href="css/style.min.css">
+  <script src="js/main.min.js" defer></script> -->
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/clusterize.js@0.18.1/clusterize.min.js"></script>
+  <script src="js/main.js" defer></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pernataan DPS</title>
 </head>
@@ -16,6 +19,7 @@
       Last updated: <span id="lastUpdated">-</span>
       <a id="spinner"></a>
     </div>
+    <!-- auto refresh toggle -->
   </div>
 
   <div class="search-wrapper">
@@ -51,14 +55,15 @@
     </div>
   </div>
 
-  <div class="table-wrapper" id="tableWrapper">
-    <table id="data-table">
-      <thead></thead>
-      <tbody></tbody>
+  <div id="scrollArea" class="clusterize-scroll table-wrapper">
+    <table id="data-table" class="table table-auto w-full text-sm">
+      <thead id="tableHeader"></thead>
+      <tbody id="contentArea" class="clusterize-content"></tbody>
     </table>
   </div>
+
   <a href="javascript:void(0);" id="rocketmeluncur" class="" aria-label="Back to top"><i></i></a>
-  <audio id="easterAudio" src="assets/hidup-jokowi.mp3" preload="auto"></audio>
-  <audio id="easterAudio" src="assets/roblox-death.mp3" preload="auto"></audio>
+  <audio id="hidup-jokowi" src="assets/hidup-jokowi.mp3" preload="auto"></audio>
+  <audio id="rocketmeluncur" src="assets/roblox-death.mp3" preload="auto"></audio>
 </body>
 </html>

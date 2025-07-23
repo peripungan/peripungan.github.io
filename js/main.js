@@ -1,5 +1,5 @@
 const columnOrder = [
-  "SKU", "NAMA", "Harga PL", "Grand Total",
+  "SKU", "Nama", "Harga", "Total",
   "A12 - 1", "A12 - 2", "A12 - 3", "A12 - 4",
   "A19 - 1", "A19 - 2", "A19 - 3",
   "A20 - 1", "A20 - 3", "LTC"
@@ -17,6 +17,13 @@ if ('serviceWorker' in navigator) {
     .then(reg => console.log('✅ Service Worker registered:', reg.scope))
     .catch(err => console.error('⚠️ Service Worker failed:', err));
 }
+
+let clusterize = new Clusterize({
+  rows: [],
+  scrollId: 'scrollArea',
+  contentId: 'contentArea',
+  no_data_text: 'Tidak ada data',
+});
 
 function changeTheme(theme) {
   document.body.className = theme;
@@ -134,13 +141,13 @@ function initResize(index) {
 function renderTable() {
   const search = document.getElementById('searchInput').value.toLowerCase().trim();
   const selectedFloors = getSelectedFloors();
-  const dynamicColumns = ["SKU", "NAMA", "Harga PL", "Grand Total", ...selectedFloors];
-  const thead = document.querySelector("#data-table thead");
-  const tbody = document.querySelector("#data-table tbody");
-
+  const dynamicColumns = ["SKU", "Nama", "Harga", "Total", ...selectedFloors];
+  
   // Clear and re-render header
+  const thead = document.querySelector("#data-table thead");
   thead.innerHTML = '';
   const headerRow = document.createElement('tr');
+
   dynamicColumns.forEach((col, index) => {
     const th = document.createElement('th');
     th.textContent = col;
@@ -162,73 +169,50 @@ function renderTable() {
 
   // Filter data by tab and search
   let filtered = data.filter(row => {
-    const keyword = `${row["SKU"] ?? ''} ${row["NAMA"] ?? ''}`.toLowerCase();
-    const tokens = search.trim().split(/\s+/); // Split input by spaces into keywords
-
+    const keyword = `${row["SKU"] ?? ''} ${row["Nama"] ?? ''}`.toLowerCase();
+    const tokens = search.split(/\s+/);
     const searchMatch = tokens.every(token => keyword.includes(token));
-    const minusMatch = tab !== 'minus' || selectedFloors.some(c => Number(row[c]) < 0) || Number(row["Grand Total"]) < 0;
+    const minusMatch = tab !== 'minus' || selectedFloors.some(c => Number(row[c]) < 0) || Number(row[Total]) < 0;
 
     return searchMatch && minusMatch;
   });
 
-  // Render rows
-  const fragment = document.createDocumentFragment();
-  const slice = filtered.slice(renderedRows, renderedRows + batchSize);
-  slice.forEach(row => {
-    const tr = document.createElement('tr');
-    dynamicColumns.forEach(col => {
-      const td = document.createElement('td');
-      let value = row[col];
+  // Slice + convert to HTML
+  const slice = filtered.slice(0, renderedRows + batchSize);
+  const rowsHTML = buildTableRows(slice, dynamicColumns);
 
-      if (value === undefined || value === "") {
-        value = "-";
-      } else if (col === "Harga PL") {
-        const raw = Number(value);
-        td.textContent = formatCurrency(raw);
-        td.classList.add("harga");
-
-        td.addEventListener("mouseover", () => {
-          const ppn = raw * 1.11;
-          td.textContent = formatCurrency(ppn);
-        });
-
-        td.addEventListener("mouseout", () => {
-          td.textContent = formatCurrency(raw);
-        });
-      } else {
-        td.textContent = value;
-      }
-
-      if (["SKU", "NAMA"].includes(col)) {
-        td.classList.add("left-align");
-      } else if (!isNaN(value)) {
-        td.classList.add("right-align");
-      }
-
-      tr.appendChild(td);
-    });
-
-    fragment.appendChild(tr);
-  });
-
-  tbody.appendChild(fragment);
+  clusterize.update(rowsHTML);
   renderedRows += batchSize;
 }
 
 function sortTable(column) {
   currentSort.asc = currentSort.column === column ? !currentSort.asc : true;
   currentSort.column = column;
-  
-  data.sort((a, b) => {
+
+  // Clear old sort indicators
+  document.querySelectorAll("#data-table thead th").forEach(th => {
+    th.classList.remove("sort-asc", "sort-desc");
+  });
+
+  // Add indicator to sorted column
+  const ths = document.querySelectorAll("#data-table thead th");
+  ths.forEach(th => {
+    if (th.textContent.trim() === column) {
+      th.classList.add(currentSort.asc ? "sort-asc" : "sort-desc");
+    }
+  });
+
+  data = [...data].sort((a, b) => {
     let valA = a[column] ?? '';
     let valB = b[column] ?? '';
     return currentSort.asc
-      ? valA.toString().localeCompare(valB.toString(), undefined, { numeric: true })
-      : valB.toString().localeCompare(valA.toString(), undefined, { numeric: true });
+      ? compareValues(valA, valB)
+      : compareValues(valB, valA);
   });
+
   renderedRows = 0;
-  document.querySelector("#data-table tbody").innerHTML = '';
-  renderTable();
+  clusterize.clear();       // <---- ini penting agar rows direset
+  renderTable();            // lalu render ulang dengan urutan baru
 }
 
 function refreshTable() {
@@ -259,22 +243,73 @@ function clearSearch() {
 async function fetchData() {
   document.getElementById("spinner").style.display = "inline-block";
 
-  const res = await fetch("https://pusatpneumatic.com/pernataan/scripts/stok.json");
+  const res = await fetch("https://pusatpneumatic.com/pernataan/scripts/stok-dev.json");
   const rawData = await res.json();
 
-  data = rawData || [];
+  data = (rawData || []).map(item => {
+  const row = {
+    SKU: item.s,
+    Nama: item.n,
+    Harga: item.p,
+    Total: item.t
+  };
+  item.k.forEach(loc => {
+    row[loc.l] = loc.q;
+  });
+  return row;
+});
 
   setupLantaiCheckboxes();
-  document.querySelector("#data-table thead").innerHTML = '';
-  document.querySelector("#data-table tbody").innerHTML = '';
   renderedRows = 0;
+  clusterize.clear();  // Penting: reset clusterize internal state
   renderTable();
   document.getElementById("lastUpdated").textContent = new Date().toLocaleTimeString('id-ID');
   document.getElementById("spinner").style.display = "none";
 }
 
-document.getElementById("tableWrapper").addEventListener("scroll", () => {
-  const wrapper = document.getElementById("tableWrapper");
+function buildTableRows(rows, dynamicColumns) {
+  return rows.map(row => {
+    let tr = "<tr>";
+    dynamicColumns.forEach(col => {
+      let value = row[col];
+      let classes = "";
+      let attrs = "";
+
+      if (value === undefined || value === "") {
+        value = "-";
+      } else if (col === "Harga") {
+        const raw = Number(value);
+        value = formatCurrency(raw);
+        classes = "harga";
+        attrs = `data-raw="${raw}"`;
+      }
+
+      if (["SKU", "Nama"].includes(col)) {
+        classes += "left-align";
+      } else if (!isNaN(value)) {
+        classes += "right-align";
+      }
+
+      tr += `<td class="${classes.trim()}" ${attrs}>${value}</td>`;
+    });
+    tr += "</tr>";
+    return tr;
+  });
+}
+
+function compareValues(a, b) {
+  const numA = parseFloat(a);
+  const numB = parseFloat(b);
+
+  if (!isNaN(numA) && !isNaN(numB)) {
+    return numA - numB;
+  }
+
+  return String(a).localeCompare(String(b), 'id', { numeric: true });
+}
+
+document.getElementById("scrollArea").addEventListener("scroll", () => {
+  const wrapper = document.getElementById("scrollArea");
   if (wrapper.scrollTop + wrapper.clientHeight >= wrapper.scrollHeight - 10) {
     renderTable();
   }
@@ -288,22 +323,41 @@ document.getElementById("toggleFilterBtn").addEventListener("click", function ()
   button.textContent = (isOpen ? "🔼" : "🔽") + " Filter";
 });
 
+document.addEventListener("mouseover", (e) => {
+  if (e.target.matches("td.harga")) {
+    const td = e.target;
+    const raw = parseFloat(td.dataset.raw);
+    if (!isNaN(raw)) {
+      td.dataset.original = td.textContent;
+      td.textContent = formatCurrency(raw * 1.11);
+    }
+  }
+});
+
+document.addEventListener("mouseout", (e) => {
+  const td = e.target;
+  if (e.target.matches("td.harga") && td.dataset.original) {
+    td.textContent = td.dataset.original;
+    delete td.dataset.original;
+  }
+});
+
 document.getElementById("lastUpdated").addEventListener("click", function () {
-  const audio = document.getElementById("easterAudio");
+  const audio = document.getElementById("hidup-jokowi");
   audio.currentTime = 0;
   audio.play();
 });
 
 document.addEventListener("DOMContentLoaded", () => {
-  const tableWrapper = document.getElementById("tableWrapper");
+  const scrollArea = document.getElementById("scrollArea");
   const rocket = document.getElementById("rocketmeluncur");
   let isLaunched = false;
 
   // Scroll listener
-  tableWrapper.addEventListener("scroll", () => {
+  scrollArea.addEventListener("scroll", () => {
     if (isLaunched) return; // Jangan munculkan ulang jika sedang launch
 
-    if (tableWrapper.scrollTop > 200) {
+    if (scrollArea.scrollTop > 200) {
       rocket.classList.add("showrocket");
     } else {
       rocket.classList.remove("showrocket");
@@ -316,7 +370,7 @@ document.addEventListener("DOMContentLoaded", () => {
     isLaunched = true;
 
     // Scroll to top
-    tableWrapper.scrollTo({
+    scrollArea.scrollTo({
       top: 0,
       behavior: "smooth"
     });
