@@ -18,8 +18,16 @@
     <div id="status-bar">
       Last updated: <span id="lastUpdated">-</span>
       <a id="spinner"></a>
+
+      <!-- AUTO REFRESH TOGGLE UI -->
+      <label class="switch-update" title="Auto Refresh">
+        <input class="cb" type="checkbox" id="autoRefreshToggle" checked onchange="toggleAutoRefresh()" />
+        <span class="toggle">
+          <span class="left">off</span>
+          <span class="right">on</span>
+        </span>
+      </label>
     </div>
-    <!-- auto refresh toggle -->
   </div>
 
   <div class="search-wrapper">
@@ -41,10 +49,14 @@
           <option value="mars">Mars</option>
         </select>
 
-        <div class="tab-buttons">
-          <button onclick="setTab('all')" id="tabAll" class="active">Semua Data</button>
-          <button onclick="setTab('minus')" id="tabMinus">Stok Minus</button>
-        </div>
+        <label for="stockToggle" class="switch-stock" aria-label="Toggle Stock">
+          <input class="cb" type="checkbox" id="stockToggle" checked onchange="onStockToggle()" />
+          <span class="toggle-stock">
+            <span class="left-stock">Semua</span>
+            <span class="right-stock">Minus</span>
+          </span>
+        </label>
+
       </header>
 
       <div class="lantai-wrapper">
@@ -64,6 +76,6 @@
 
   <a href="javascript:void(0);" id="rocketmeluncur" class="" aria-label="Back to top"><i></i></a>
   <audio id="hidup-jokowi" src="assets/hidup-jokowi.mp3" preload="auto"></audio>
-  <audio id="rocketmeluncur" src="assets/roblox-death.mp3" preload="auto"></audio>
+  <audio id="rocket-audio" src="assets/roblox-death.mp3" preload="auto"></audio>
 </body>
 </html>

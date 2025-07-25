@@ -11,6 +11,7 @@ let tab = 'all';
 let batchSize = 100;
 let renderedRows = 0;
 let currentSort = { column: null, asc: true };
+let autoRefreshInterval = null;
 
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('service-worker.js')
@@ -47,15 +48,26 @@ function formatCurrency(num) {
   }).format(num);
 }
 
-function setTab(value) {
-  tab = value;
-  document.getElementById("tabAll").classList.remove("active");
-  document.getElementById("tabMinus").classList.remove("active");
-  document.getElementById("tab" + capitalize(value)).classList.add("active");
+// function setTab(value) {
+//   tab = value;
+//   document.getElementById("tabAll").classList.remove("active");
+//   document.getElementById("tabMinus").classList.remove("active");
+//   document.getElementById("tab" + capitalize(value)).classList.add("active");
+//   renderedRows = 0;
+//   document.querySelector("#data-table tbody").innerHTML = '';
+//   renderTable();
+// }
+
+function onStockToggle() {
+  const isMinus = document.getElementById("stockToggle").checked;
+  tab = isMinus ? 'minus' : 'all';
   renderedRows = 0;
-  document.querySelector("#data-table tbody").innerHTML = '';
+  clusterize.clear();
+
   renderTable();
+  showToast(isMinus ? "❌ Menampilkan Stok Minus" : "📦 Menampilkan Semua Data");
 }
+
 
 function debounce(fn, delay) {
   let timeoutId;
@@ -172,7 +184,7 @@ function renderTable() {
     const keyword = `${row["SKU"] ?? ''} ${row["Nama"] ?? ''}`.toLowerCase();
     const tokens = search.split(/\s+/);
     const searchMatch = tokens.every(token => keyword.includes(token));
-    const minusMatch = tab !== 'minus' || selectedFloors.some(c => Number(row[c]) < 0) || Number(row[Total]) < 0;
+    const minusMatch = tab !== 'minus' || selectedFloors.some(c => Number(row[c]) < 0) || Number(row["Total"]) < 0;
 
     return searchMatch && minusMatch;
   });
@@ -297,6 +309,52 @@ function buildTableRows(rows, dynamicColumns) {
   });
 }
 
+function toggleAutoRefresh() {
+  const toggle = document.getElementById('autoRefreshToggle');
+  const isEnabled = toggle.checked;
+
+  if (isEnabled) {
+    showToast("🔄 Auto Update AKTIF");
+    autoRefreshInterval = setInterval(() => {
+      console.log("Auto refreshing...");
+      fetchData(); // Ganti ini dengan fungsi fetch datamu
+    }, 60000); // 1 menit
+  } else {
+    showToast("⏸️ Auto Update NONAKTIF");
+    clearInterval(autoRefreshInterval);
+    autoRefreshInterval = null;
+  }
+}
+
+function showToast(message) {
+  const toast = document.createElement("div");
+  toast.textContent = message;
+  toast.style.position = "fixed";
+  toast.style.bottom = "20px";
+  toast.style.left = "50%";
+  toast.style.transform = "translateX(-50%)";
+  toast.style.background = "#333";
+  toast.style.color = "#fff";
+  toast.style.padding = "8px 16px";
+  toast.style.borderRadius = "20px";
+  toast.style.fontSize = "0.85rem";
+  toast.style.zIndex = "1000";
+  toast.style.opacity = "0";
+  toast.style.transition = "opacity 0.3s";
+
+  document.body.appendChild(toast);
+  setTimeout(() => toast.style.opacity = "1", 10);
+  setTimeout(() => {
+    toast.style.opacity = "0";
+    setTimeout(() => toast.remove(), 300);
+  }, 2000);
+}
+
+// Jalankan awal
+window.addEventListener("DOMContentLoaded", () => {
+  toggleAutoRefresh();
+});
+
 function compareValues(a, b) {
   const numA = parseFloat(a);
   const numB = parseFloat(b);
@@ -349,6 +407,7 @@ document.getElementById("lastUpdated").addEventListener("click", function () {
 });
 
 document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("stockToggle").checked = (tab === "minus");
   const scrollArea = document.getElementById("scrollArea");
   const rocket = document.getElementById("rocketmeluncur");
   let isLaunched = false;
@@ -367,6 +426,10 @@ document.addEventListener("DOMContentLoaded", () => {
   // Click to scroll to top
   rocket.addEventListener("click", () => {
     rocket.classList.add("launchrocket");
+    
+    const audio = document.getElementById("roket-audio");
+    audio.currentTime = 0;
+    audio.play();
     isLaunched = true;
 
     // Scroll to top
@@ -386,4 +449,3 @@ document.addEventListener("DOMContentLoaded", () => {
 
 loadSavedTheme();
 fetchData();
-setInterval(fetchData, 60000);
