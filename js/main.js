@@ -259,17 +259,17 @@ async function fetchData() {
   const rawData = await res.json();
 
   data = (rawData || []).map(item => {
-  const row = {
-    SKU: item.s,
-    Nama: item.n,
-    Harga: item.p,
-    Total: item.t
-  };
-  item.k.forEach(loc => {
-    row[loc.l] = loc.q;
+    const row = {
+      SKU: item.s,
+      Nama: item.n,
+      Harga: item.p,
+      Total: item.t
+    };
+    item.k.forEach(loc => {
+      row[loc.l] = loc.q;
+    });
+    return row;
   });
-  return row;
-});
 
   setupLantaiCheckboxes();
   renderedRows = 0;
