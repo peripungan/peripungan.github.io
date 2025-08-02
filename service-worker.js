@@ -1,10 +1,10 @@
-const CACHE_NAME = 'pernataan-cache-v1.3';
+const CACHE_NAME = 'pernataan-cache-v1.4';
 const FILES_TO_CACHE = [
   '/',
   '/index.html',
   '/js/main.js',
   '/css/style.css',
-  'https://pusatpneumatic.com/pernataan/scripts/stok.json', // 💡 Cache remote JSON
+  'https://pusatpneumatic.com/pernataan/scripts/stok-dev.json', // 💡 Cache remote JSON
 ];
 
 // Install dan cache
@@ -44,7 +44,7 @@ self.addEventListener('fetch', (event) => {
       return (
         response ||
         fetch(event.request).catch(() =>
-          caches.match('https://pusatpneumatic.com/pernataan/scripts/stok.json')
+          caches.match('https://pusatpneumatic.com/pernataan/scripts/stok-dev.json')
         )
       );
     })
