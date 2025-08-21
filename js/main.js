@@ -2,7 +2,8 @@ const columnOrder = [
   "SKU", "Nama", "Harga", "Total",
   "A12 - 1", "A12 - 2", "A12 - 3", "A12 - 4",
   "A19 - 1", "A19 - 2", "A19 - 3",
-  "A20 - 1", "A20 - 2", "A20 - 3", "LTC"
+  "A20 - 1", "A20 - 2", "A20 - 3", "A20 - 4",
+  "LTC"
 ];
 
 const lantaiColumns = columnOrder.slice(4);
